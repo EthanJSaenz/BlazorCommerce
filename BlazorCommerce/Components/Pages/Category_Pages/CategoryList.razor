@@ -1,4 +1,5 @@
 ﻿@page "/category"
+@inject ICategoryRepository _CategoryRepository
 <h3>CategoryList</h3>
 
 @if(IsLoading)
@@ -20,27 +21,62 @@ else
         <div class="card-body p-4">
             <div class="row pb-3">
                 <div class="col-12 text-end">
-                    <button class="btn btn-large btn-secondary" style="width:250px"> Add New Category</button>
+                    <a href="category/create" class="btn btn-large btn-secondary" style="width:250px"><i class="bi bi-plus-square"></i> Add New Category</a>
                 </div>
             </div>
-            <p>Category's List</p>
+            @if(Categories.Any())
+            {
+
+                <table class="table table-bordered table-striped">
+                    <thread>
+                        <tr>
+                            <th>Name</th>
+                            <th></th>
+                        </tr>
+                    </thread>
+                    <tbody>
+                        @foreach(var obj in Categories)
+                        {
+                            <tr>
+                                <td>
+                                    @obj.Name
+                                </td>
+                                <td>
+                                    <a href="@($"category/update/{obj.Id}")" class="btn btn-primary"><i class="bi bi-pencil-square"></i>Edit</a>
+                                    <button class="btn btn-danger"><i class="bi bi-trash-fill"></i>Delete</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
         </div>
     </div>
 }
 
 @code {
-    public bool IsLoading { get; set; } = false;
+    private bool IsLoading { get; set; } = false;
+    private IEnumerable<Category> Categories { get; set; } = new List<Category>();
 
     protected override async Task OnInitializedAsync()
     {
-        IsLoading = true;
-        await Task.Delay(200);
-        LoadCategories();
-        IsLoading = false;
+
     }
 
-    private void LoadCategories()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if(firstRender)
+        {
+            await LoadCategories();
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadCategories()
+    {
+ 
+        Categories = await _CategoryRepository.GetAllAsync();
         //Load categories
     }
 }
